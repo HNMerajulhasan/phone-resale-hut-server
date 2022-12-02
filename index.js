@@ -65,6 +65,12 @@ async function run() {
   //     res.send(products);
   //  });
 
+  app.get("/products", async (req, res) => {
+    const query = {};
+    const AllPro = await AllProducts.find(query).toArray();
+    res.send(AllPro);
+  });
+
     app.post("/products", async (req, res) => {
       const products = req.body;
       const result = await AllProducts.insertOne(products);
@@ -131,6 +137,14 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc, option);
       res.send(result);
     });
+
+   app.get('/users/admin/:email',async(req,res)=>{
+      const id=req.params.email;
+      const query={_id:Object(id)}
+      const user=await userCollection.insertOne(user);
+      res.send(result);
+   })
+
     app.put("/users/varify/:id", varifyJWT, async (req, res) => {
       const id = req.params.id;
       const decodedEmail = req.decoded.email;
@@ -187,9 +201,9 @@ async function run() {
 
 
   app.get("/dashboard/mybookings/:buyerEmail",async(req,res)=>{
-    const email=req.params.email;
-    const query={email:email}
-    const user=await bookingCollection.findOne(query)
+    const email=req.params.buyerEmail;
+    const query={buyerEmail:email}
+    const user=await bookingCollection.find(query).toArray()
     res.send(user)
   })
 
