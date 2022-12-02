@@ -103,3 +103,36 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+
+    app.get("/allusers", async (req, res) => {
+      const query = {};
+      const allUser = await userCollection.find(query).toArray();
+      res.send(allUser);
+    });
+
+    app.get('/allusers/:email',async(req,res)=>{
+      const email=req.params.email;
+      const query={email:email}
+      const user=await userCollection.findOne(query)
+      res.send(user)
+    })
+
+    app.put("/users/admin/:id", varifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const decodedEmail = req.decoded.email;
+      //   console.log("decoded Email", decodedEmail);
+      const query = { email: decodedEmail };
+      const user = await userCollection.findOne(query);
+      if (user.role !== "admin") {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+      const filter = { _id: ObjectId(id) };
+      const option = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc, option);
+      res.send(result);
+    });
