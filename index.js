@@ -10,7 +10,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
  //const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.yalqvm0.mongodb.net/?retryWrites=true&w=majority`;
 // console.log(uri);
 // const client = new MongoClient(uri, {
@@ -23,7 +22,6 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.0vbsoxh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 console.log(uri);
-
 
 function varifyJWT(req, res, next) {
   //   console.log("Token inside verifyJWT", req.headers.authorization);
@@ -41,7 +39,6 @@ function varifyJWT(req, res, next) {
     next();
   });
 }
-
 async function run() {
   try {
     const AllCategory = client.db("mobileHut").collection("AllCategories");
@@ -74,7 +71,6 @@ async function run() {
       res.send(result);
     });
 
-    
     //User Entry on Database
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
@@ -103,7 +99,6 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
-
     app.get("/allusers", async (req, res) => {
       const query = {};
       const allUser = await userCollection.find(query).toArray();
@@ -136,7 +131,6 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc, option);
       res.send(result);
     });
-
     app.put("/users/varify/:id", varifyJWT, async (req, res) => {
       const id = req.params.id;
       const decodedEmail = req.decoded.email;
@@ -182,3 +176,65 @@ async function run() {
       const bookings = await bookingCollection.find(query).toArray();
       res.send(bookings);
     });
+
+
+    app.get('/allusers/:email',async(req,res)=>{
+      const email=req.params.email;
+      const query={email:email}
+      const user=await userCollection.findOne(query)
+      res.send(user)
+    })
+
+
+  app.get("/dashboard/mybookings/:buyerEmail",async(req,res)=>{
+    const email=req.params.email;
+    const query={email:email}
+    const user=await bookingCollection.findOne(query)
+    res.send(user)
+  })
+
+    //My Product
+
+    app.get("/myproduct/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const myBookings = await AllProducts.find(query).toArray();
+      res.send(myBookings);
+    });
+    app.delete("/myproduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await AllProducts.deleteOne(query);
+      res.send(result);
+    });
+    app.delete("/myBookingDelete/:id", async (req, res) => {
+      const id = req.params.id;
+      const bookinQuery = { bookingID: id };
+      const bookingResult = await bookingCollection.deleteMany(bookinQuery);
+      res.send(bookingResult);
+    });
+    app.put("/advertiseproduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const option = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          advertiseProdcut: true,
+        },
+      };
+      const result = await AllProducts.updateOne(filter, updatedDoc, option);
+      res.send(result);
+    });
+    app.get("/advertisePrudct", async (req, res) => {
+      const query = { advertiseProdcut: true };
+      const adProduct = await AllProducts.find(query).toArray();
+      res.send(adProduct);
+    });
+  } finally {
+  }
+}
+run();
+app.get("/", async (req, res) => {
+  res.send("Mobile Hut Server Runnin");
+});
+app.listen(port, () => console.log(`Mobile Hut Server Running on ${port}`));
