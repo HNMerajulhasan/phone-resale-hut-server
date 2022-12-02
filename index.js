@@ -41,3 +41,35 @@ function varifyJWT(req, res, next) {
     next();
   });
 }
+
+async function run() {
+  try {
+    const AllCategory = client.db("mobileHut").collection("AllCategories");
+    const AllProducts = client.db("mobileHut").collection("AllProducts");
+    const userCollection = client.db("mobileHut").collection("users");
+    const bookingCollection = client.db("mobileHut").collection("bookings");
+
+    app.get("/category", async (req, res) => {
+      const query = {};
+      const options = await AllCategory.find(query).toArray();
+      res.send(options);
+    });
+    app.get("/category/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { categoryId: id };
+      const products = await AllProducts.find(query).toArray();
+      res.send(products);
+    });
+
+  //   app.get('/category/:id',async(req,res)=>{
+  //     const id=req.params.id;
+  //     const query={_id:ObjectId(id)};
+  //     const products=await AllCategory.findOne(query);
+  //     res.send(products);
+  //  });
+
+    app.post("/products", async (req, res) => {
+      const products = req.body;
+      const result = await AllProducts.insertOne(products);
+      res.send(result);
+    });
