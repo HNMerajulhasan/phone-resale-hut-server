@@ -73,3 +73,33 @@ async function run() {
       const result = await AllProducts.insertOne(products);
       res.send(result);
     });
+
+    
+    //User Entry on Database
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+
+      const query = { email: email };
+      //   console.log(query);
+      const user = await userCollection.findOne(query);
+
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "10h",
+        });
+        return res.send({ accessToken: token });
+      }
+      res.status(403).send({ accessToken: "" });
+    });
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+
+      const query = { email: user?.email };
+      const alreadyUserExist = await userCollection.find(query).toArray();
+
+      if (alreadyUserExist.length) {
+        return res.send({ acknowledged: false });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
